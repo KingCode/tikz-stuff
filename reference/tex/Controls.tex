@@ -1,0 +1,18 @@
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+\usepackage{tikz}
+\begin{document}
+
+\begin{tikzpicture}
+\filldraw [gray] (0,0) circle (2pt)
+(1,1) circle (2pt)
+(2,1) circle (2pt)
+(2,0) circle (2pt);
+\draw (0,0) .. controls (1,1) and (2,1) .. (2,0);
+\end{tikzpicture}
+
+
+
+\end{document}

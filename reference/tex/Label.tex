@@ -1,0 +1,61 @@
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\begin{document}
+
+\tikz
+\node [circle,draw,label=60:$60^\circ$,label=below:$-90^\circ$] {my circle};
+
+
+% Adding a color attribute to a label from within a style: all labels red
+\begin{tikzpicture}[place/.style={circle,draw=blue!50,fill=blue!20,thick,
+inner sep=0pt,minimum size=6mm},
+transition/.style={rectangle,draw=black!50,fill=black!20,thick,
+inner sep=0pt,minimum size=4mm},every label/.style={red}]
+
+\path[use as bounding box, red] (-1.8,0) rectangle (1, 1);
+
+\node[place] (waiting) {};
+\node[place] (critical) [below=of waiting] {};
+\node[place] (semaphore) [below=of critical,
+label=above:$s\le3$] {};
+\node[transition] (leave critical) [right=of critical] {};
+\node[transition] (enter critical) [left=of critical] {};
+\end{tikzpicture}
+
+
+% Adding a color attribute locally: override the global red with local green.
+% NOTE: using braces to prevent confusion of the nested [] with termination of 
+% the outer one!!
+\begin{tikzpicture}[place/.style={circle,draw=blue!50,fill=blue!20,thick,
+inner sep=0pt,minimum size=6mm},
+transition/.style={rectangle,draw=black!50,fill=black!20,thick,
+inner sep=0pt,minimum size=4mm},every label/.style={red}]
+
+\path[use as bounding box, red] (-1.8,0) rectangle (1, 5);
+
+\node[place] (waiting) {};
+\node[place] (critical) [below=of waiting] {};
+\node[place] (semaphore) [below=of critical,
+label={[green]above:$s\le3$}] {};
+\node[transition] (leave critical) [right=of critical] {};
+\node[transition] (enter critical) [left=of critical] {};
+\end{tikzpicture}
+
+% Adding labels next to lines using AUTO-PLACEMENT:
+\begin{tikzpicture}[auto,bend right]
+\path[use as bounding box, red] (-1.8,0) rectangle (1, 5.5);
+
+\node (a) at (0:1) {$0^\circ$};
+\node (b) at (120:1) {$120^\circ$};
+\node (c) at (240:1) {$240^\circ$};
+\draw (a) to node {1} node [swap] {1'} (b)
+(b) to node {2} node [swap] {2'} (c)
+(c) to node {3} node [swap] {3'} (a);
+\end{tikzpicture}
+
+
+\end{document}
