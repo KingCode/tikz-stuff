@@ -1,0 +1,14 @@
+%\title{Bounding boxes, p.166}
+\documentclass{article} % say
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}[scale=3]
+	\draw[red] (0,0) circle (2pt);
+	\draw[red] (2,1) circle (3pt);
+	\draw (current bounding box.south west) rectangle
+					(current bounding box.north east);
+
+\draw[red] (3,-1) circle (4pt);
+\draw[thick] (current bounding box.south west) rectangle
+					(current bounding box.north east);
+\end{tikzpicture}\end{document}

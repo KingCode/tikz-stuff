@@ -1,0 +1,21 @@
+%\title{Baseline}
+\documentclass{article} % say
+\usepackage{tikz}
+\usepgflibrary{shapes.misc}
+\begin{document}
+
+IMPLICIT BASELINE
+Normally, the lower end of the picture is put on the baseline of the surrounding text: see p. 117
+Draw a circle WITHOUT USING BASELINE:\tikz\draw(0,0)circle(2ex);
+
+DECLARED BASELINE
+Draw a circle CENTERED AT CURRENT BASELINE:\tikz[baseline=0pt]\draw(0,0)circle(2ex);
+
+
+$A \mathbin{\tikz[baseline] \draw[->>] (0pt,.5ex) -- (3ex,.5ex);} B$
+
+
+Hello 
+\tikz[baseline=(X.base)]
+	\node [cross out, draw] (X) {world};
+\end{document}

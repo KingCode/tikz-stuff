@@ -55,9 +55,15 @@ post/.style={->,shorten >=1pt,>=stealth',semithick}]
 %\draw [->] (waiting) to [bend right=45] (enter critical);
 %\draw [->] (enter critical) to [bend right=45] (semaphore);
 
-
 % Or, instead of the semaphore label, we can use:
 %  \node [red,above] at (semaphore.north) {$s\le 3$};
+
+
+\draw [->,decorate,
+decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}]
+(0,0) -- (3,0);
+
+
 \end{tikzpicture}
 
 \end{document}
