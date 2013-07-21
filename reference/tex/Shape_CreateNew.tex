@@ -1,0 +1,58 @@
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.symbols, positioning}
+\usepackage{pgf}
+\begin{document}
+\pgfdeclareshape{document}{
+	\inheritsavedanchors[from=rectangle] % this is nearly a rectangle
+	\inheritanchorborder[from=rectangle]
+	\inheritanchor[from=rectangle]{center}
+	\inheritanchor[from=rectangle]{north}
+	\inheritanchor[from=rectangle]{south}
+	\inheritanchor[from=rectangle]{west}
+	\inheritanchor[from=rectangle]{east}
+	% ... and possibly more
+	\backgroundpath{% this is new
+		% store lower right in xa/ya and upper right in xb/yb
+		\southwest \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+		\northeast \pgf@xb=\pgf@x \pgf@yb=\pgf@y
+		% compute corner of ``flipped page''
+		\pgf@xc=\pgf@xb \advance\pgf@xc by-5pt % this should be a parameter
+		\pgf@yc=\pgf@yb \advance\pgf@yc by-5pt
+		% construct main path
+		\pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+		\pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@yb}}
+		\pgfpathlineto{\pgfpoint{\pgf@xc}{\pgf@yb}}
+		\pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@yc}}
+		\pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@ya}}
+		\pgfpathclose
+		% add little corner
+		\pgfpathmoveto{\pgfpoint{\pgf@xc}{\pgf@yb}}
+		\pgfpathlineto{\pgfpoint{\pgf@xc}{\pgf@yc}}
+		\pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@yc}}
+		\pgfpathlineto{\pgfpoint{\pgf@xc}{\pgf@yc}}
+	}
+}\hskip-1.2cm
+\begin{tikzpicture}
+\node[shade,draw,shape=document,inner sep=2ex] (x) {Remark};
+\node[fill=examplefill,draw,ellipse,double]
+at ([shift=(-80:3cm)]x) (y) {Use Case};
+\draw[dashed] (x) -- (y);
+\end{tikzpicture}
+
+
+%\begin{pgfpicture}
+%\pgftransformrotate{30}
+%\pgfnode{rectangle}{center}{Hello World!}{x}{\pgfusepath{stroke}}
+%\pgfpathcircle{\pgfpointanchor{x}{north}}{2pt}
+%\pgfpathcircle{\pgfpointanchor{x}{south}}{2pt}
+%\pgfpathcircle{\pgfpointanchor{x}{east}}{2pt}
+%\pgfpathcircle{\pgfpointanchor{x}{west}}{2pt}
+%\pgfpathcircle{\pgfpointanchor{x}{north east}}{2pt}
+%\pgfusepath{fill}
+%\end{pgfpicture}
+
+\end{document}
