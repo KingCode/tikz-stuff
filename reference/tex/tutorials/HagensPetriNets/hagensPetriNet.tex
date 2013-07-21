@@ -59,11 +59,14 @@ post/.style={->,shorten >=1pt,>=stealth',semithick}]
 %  \node [red,above] at (semaphore.north) {$s\le 3$};
 
 
-\draw [->,decorate,
-decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}]
-(0,0) -- (3,0);
+%\draw [->,decorate,
+%decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}]
+%(0,0) -- (3,0);
 
-
+\begin{pgfonlayer}{background}
+	\node [fill=black!30,fit=(waiting) (critical) (semaphore)
+						(leave critical) (enter critical)] {};
+\end{pgfonlayer}
 \end{tikzpicture}
 
 \end{document}
