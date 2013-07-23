@@ -2,5 +2,8 @@
 *.pdf
 *.dvi
 *.log
+*.tmp
+*.tcp
+*.tps
 *.synctex.gz
 *.DS_Store

@@ -2,5 +2,7 @@
 *.pdf
 *.dvi
 *.log
+*.bbl
+*.blg
 *.synctex.gz
 *.DS_Store
