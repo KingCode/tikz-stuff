@@ -68,7 +68,7 @@
 						 minimum size=5mm},
 			database/.style={cylinder,draw,
 						 fill=green!20,
-						 aspect=.20,
+						 aspect=.10,
 						 minimum size=1cm,
 						 minimum height=1cm+20pt,
 						 inner sep=2pt,
@@ -107,9 +107,9 @@
 %% ------------------------------ GATEWAY----------------------- %%
 	\node [ component,below right=of web, 
 			minimum height=1.5cm,
- 			xshift=-3.5cm,yshift=-15pt] (gateway) {Gateway};
+ 			xshift=-4cm,yshift=-18pt] (gateway) {Gateway};
 
-	%% phantom node for return arrow from KV store
+	%% phantom node for return arrow from connection store
 	\node [right=of gateway, xshift=-1.25cm, yshift=-2pt] (gateway_kvback) {};
 
 %% -------------------------------- CONNECTIONS ----------------- %%
@@ -126,8 +126,9 @@
 		edge[this is] (conn2);	
 
 
-%% --------------------------------- KV Store ---------------------- %%
-	\node[database, right=of gateway, xshift=1.7cm,yshift=-35pt] (kvstore) {K-V Store}
+%% --------------------------------- Connections Store ---------------------- %%
+	\node[database, right=of gateway, align=center,
+			xshift=1.5cm,yshift=-18pt] (kvs1) {ID-Connection\\Lookup}
 		edge[pre] node [elabs]	{lookup/add id-connection}	(gateway)
 		edge[post,returning] node[elabbs] {return connection} (gateway);
 
@@ -139,24 +140,32 @@
 	\node[inlay, above=of service,
 		  yshift=-3.8cm,xshift=-1cm-5pt] (cache) {cache};
 
+	%% -- phantom node for return edge with session store
+	\node [right=of service,xshift=-1cm-8pt,yshift=2pt] (service_kvback) {};
+%% ----------------------------------- Session Store --------------------------- %%
+	\node[database, right=of service,xshift=1cm+15pt,yshift=10pt,align=center] {Session\\Store}
+		edge[pre] node [elabs] {get/update session} (service)
+		edge[post,returning] node[elabbs] {return session} (service_kvback);
+
 %% ----------------------------------- ANALYTICS SYS ---------------- %%
-	\node[unused, right=of gateway, xshift=4cm-8pt,yshift=-50pt] {Analytics};
+	\node[unused, right=of kvs1, xshift=-15pt,yshift=-10pt] {Analytics}
+		edge[pre,dotted] node [elabs] {fetch merchant rankings} (service);
 
 
 %% ----------------------------------- DATASYS ---------------------- %%
-	\node[outsys, right=of service,
+	\node[outsys, below right=of kvs1,
 			minimum height=2cm,
-			xshift=2cm+10pt+15pt,yshift=-25pt] {Data System}
-		edge[pre,dotted] node[elab] {fetch raw data} (service);
+			xshift=-1cm+20pt,yshift=-35pt] {Data System}
+		edge[pre,dotted] node[elabb] {fetch raw data} (service);
 
 %% ------------------------------------ AUTHSYS ---------------------- %%
-	\node[outsys, above right=of gateway, xshift=3cm+15pt,yshift=-1cm-10pt] {Auth}
+	\node[outsys, above right=of kvs1, xshift=-10pt,yshift=-10pt] {Auth}
 		edge[pre,dotted] node[elabs] {successful authentication} (gateway);
 
 %% ------------------------------------ BACKGROUND ----------------- %%
 	\begin{pgfonlayer}{background}
 		\node [fill=red!10,
-				fit=(gateway) (gateway_kvback) (kvstore) (service)]
+				fit=(gateway) (gateway_kvback) (kvs1) (service)]
 			{};
 	\end{pgfonlayer}
 \end{tikzpicture}
