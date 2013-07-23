@@ -47,6 +47,9 @@
 					draw=black!50,fill=blue!20,thick,
 					minimum width=3cm,
 					inner sep=10pt},
+			innercomponent/.style={component, 
+						       dotted, 
+						       minimum width=0, inner sep=5pt},
 			outsys/.style={component, fill=black!20},
 			unused/.style={component,fill=black!10,dotted},
 			inlay/.style={
@@ -77,7 +80,7 @@
 			this is/.style=dotted,
 			ital/.style={font=\itshape},
 			subsys/.style={fill=red!10,ital,inner sep=5pt},
-			bend angle=40,
+			bend angle=20,
 			pre/.style={<-,shorten <=1pt,>=stealth',semithick},
 			post/.style={->,shorten >=1pt,>=stealth',semithick}]
 %% -------------- GRID ----------------------------------------- %%
@@ -96,7 +99,7 @@
 
 \node [component, below=of ghreads,xshift=0pt, yshift=0cm] (ghwrites) {Write Handler};
 
-\node [component, dotted, minimum width=0, inner sep=5pt,
+\node [innercomponent,
 	below=of ghwrites,xshift=27pt,yshift=15pt]	(gser) {Serializer};
 
 %% ---------------- CLIENT FIGURES ------------------------ %%
@@ -114,27 +117,40 @@
 \node [above=of servqh,xshift=30pt,yshift=-15pt,ital] (servtitle) {Serving Layer};
 
 	%% ----- phantom anchor node for db background border end point
-\node [below=of servdbn,xshift=0pt,yshift=1cm] (servdbend) {};
+\node [below=of servdbn,xshift=0pt,yshift=1cm+3pt] (servdbend) {};
 
 
 %% --------------- BATCH LAYER ------------------------------ %%
-%\node [below=of servqh,xshift=0pt,yshift=0pt] (batch
+\node [innercomponent, below=of gser,xshift=10pt,yshift=10pt] (bdeser) {Deserializer};
+\node [component, below left=of bdeser,xshift=1cm+10pt,yshift=20pt] (bwriter) {Writer};
+
+\node [component, below=of bwriter,yshift=0pt] (bformatter) {Formatter};
+\node [database, right=of bformatter,yshift=-5pt] (bfile) {File System\\HDFS};
+\node [innercomponent, right=of bfile,xshift=-1cm+20pt,yshift=30pt] 
+							(bassembler) {Query Assembler};
+%	
+
+\node [component, below right=of bassembler,xshift=-2cm,yshift=20pt] (mapreduce) {Map-Reduce}
+	edge[pre,bend right] node [elab,xshift=5pt] {run} (bassembler)
+	edge[post] node [elabs] {read all records} (bfile)
+	edge[post, bend right] node [elab,xshift=-25pt] {delete and rewrite} (servdbend);
+\node [right=of bwriter,xshift=1cm,yshift=0pt, ital] (btitle) {Batch Layer};
 
 
 \begin{pgfonlayer}{background}
-	\node [subsys,
+	\node [subsys, 
 			fit=(streamproc) (speeddb)]
 		{};
 \end{pgfonlayer}
 
 \begin{pgfonlayer}{background}
-	\node [subsys,
+	\node [subsys, black!10,
 			fit=(gser) (ghwrites) (ghreads)]
 		{};
 \end{pgfonlayer}
 
 \begin{pgfonlayer}{background}
-	\node [subsys,
+	\node [subsys, blue!10,
 			fit= (servtitle) (servqh) (servdb1) (servdbn)]
 		{};
 \end{pgfonlayer}
@@ -142,6 +158,12 @@
 \begin{pgfonlayer}{background}
 	\node [dotted,thick,draw,inner sep=4pt,
 			fit=  (servdb1) (servdbn)]
+		{};
+\end{pgfonlayer}
+
+\begin{pgfonlayer}{background}
+	\node [subsys, yellow!30,
+			fit=  (bwriter) (bdeser)  (bformatter) (bfile) (bassembler) (mapreduce)]
 		{};
 \end{pgfonlayer}
 \end{tikzpicture}
