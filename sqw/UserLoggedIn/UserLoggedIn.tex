@@ -24,7 +24,7 @@
 % ensures that the paper size is a4, the fonts are typeset at the size 12p
 % and the equation numbers are on the left side
 %
-\usepackage{graphicx}
+\usepackage{graphicx,showexpl,listings}
 \usepackage{tikz}
 \usetikzlibrary{shapes.symbols, 
 		shapes.geometric,
@@ -50,12 +50,19 @@
 					draw=black!50,fill=blue!20,thick,
 					minimum width=3cm,
 					inner sep=10pt},
+			outsys/.style={component, fill=black!20},
+			unused/.style={component,fill=black!10,dotted},
 			inlay/.style={
 					rectangle,
 					draw=black!60,thick,dotted,
 					minimum size=15mm,
 					inner sep=2pt},
-			every label/.style=red,
+			%every label/.style=red,
+			tinyfont/.style={font=\it\tiny},
+		      elab/.style={above,tinyfont},
+			elabb/.style={below,tinyfont},
+			elabs/.style={above,sloped,tinyfont},
+			elabbs/.style={below,sloped,tinyfont},
 			end point/.style={circle,fill=red!30,draw=black!30,thick,
 						 inner sep=1pt,
 						 minimum size=5mm},
@@ -75,10 +82,10 @@
 	\path[help lines, blue!20, draw] grid (12,12);
 
 %%  -------------- STICK USER 1 ------------------------------ %%
-	\node [xshift=70pt, yshift=-25pt] (user1) at (2, 12)
-		{ \includegraphics[width=0.6cm]{../img/stick.png}};
+	\node [xshift=70pt, yshift=-10pt] (user1) at (2, 12)
+		{ \includegraphics[width=0.4cm]{../img/stick.png}};
 	\node [below right=of user1,xshift=-70pt, yshift=15pt] (desktop)
-		{ \includegraphics[width=0.8cm]{../img/desktop.jpg}}	
+		{ \includegraphics[width=0.6cm]{../img/desktop.jpg}}	
 		edge[pre, bend left] (user1);
 		
 %%  -------------- STICK USER 2 ------------------------------ %%
@@ -95,12 +102,12 @@
 %% -------------- WEB SITE COMPONENT --------------------- %%
 	\node [ component,below left=of desktop, xshift=1.3cm,yshift=15pt] (web)
 									 {Web Site}
-		edge[pre, bend left] (desktop);
+		edge[pre, bend left]  (desktop);
 
 %% ------------------------------ GATEWAY----------------------- %%
 	\node [ component,below right=of web, 
 			minimum height=1.5cm,
- 			xshift=-3.5cm,yshift=5pt] (gateway) {Gateway};
+ 			xshift=-3.5cm,yshift=-15pt] (gateway) {Gateway};
 
 	%% phantom node for return arrow from KV store
 	\node [right=of gateway, xshift=-1.25cm, yshift=-2pt] (gateway_kvback) {};
@@ -108,35 +115,49 @@
 %% -------------------------------- CONNECTIONS ----------------- %%
 	\node[end point, above=of gateway, xshift=0.3cm,yshift=-1.55cm] 
 							(conn1)	{}
-		edge[pre] (web);
+		edge[pre] node[elab,xshift=5pt] {login} (web);
 	\node[end point, right=of conn1, xshift=-.8cm,yshift=-2pt] 
 							(conn2)	{}
-		edge[pre] (mobile);
+		edge[pre] node[elab,xshift=-5pt] {login} (mobile);
+
+	%% Connections Label
+	\node[left=of conn1,tinyfont, xshift=5pt,yshift=23pt] {persistent duplex connections}
+		edge[this is] (conn1)
+		edge[this is] (conn2);	
+
 
 %% --------------------------------- KV Store ---------------------- %%
-	\node[database, right=of gateway, xshift=1.7cm] (kvstore) {K-V Store}
-		edge[pre] (gateway)
-		edge[post,returning] (gateway_kvback);
+	\node[database, right=of gateway, xshift=1.7cm,yshift=-35pt] (kvstore) {K-V Store}
+		edge[pre] node [elabs]	{lookup/add id-connection}	(gateway)
+		edge[post,returning] node[elabbs] {return connection} (gateway);
 
 %% ---------------------------------- SERVICE ---------------------- %%
 	\node[component, below=of gateway, 
 			minimum width=4cm, xshift=5pt, yshift=-10pt,
 			text depth=2cm] (service) {Service}
-		edge[pre] (gateway);	
+		edge[pre] node[elab,xshift=22pt] {get data for user} (gateway);	
 	\node[inlay, above=of service,
 		  yshift=-3.8cm,xshift=-1cm-5pt] (cache) {cache};
 
-%% ----------------------------------- DATASYS ---------------------- %%
-	\node[component, right=of service, fill=black!20,
-			minimum height=2cm,
-			xshift=2cm+15pt,yshift=-25pt] {Data System}
-		edge[pre,dotted] (service);
+%% ----------------------------------- ANALYTICS SYS ---------------- %%
+	\node[unused, right=of gateway, xshift=4cm-8pt,yshift=-50pt] {Analytics};
 
-%% ------------------------------------ BACGROUND ----------------- %%
+
+%% ----------------------------------- DATASYS ---------------------- %%
+	\node[outsys, right=of service,
+			minimum height=2cm,
+			xshift=2cm+10pt+15pt,yshift=-25pt] {Data System}
+		edge[pre,dotted] node[elab] {fetch raw data} (service);
+
+%% ------------------------------------ AUTHSYS ---------------------- %%
+	\node[outsys, above right=of gateway, xshift=3cm+15pt,yshift=-1cm-10pt] {Auth}
+		edge[pre,dotted] node[elabs] {successful authentication} (gateway);
+
+%% ------------------------------------ BACKGROUND ----------------- %%
 	\begin{pgfonlayer}{background}
-		\node [fill=red!10,align=left,
+		\node [fill=red!10,
 				fit=(gateway) (gateway_kvback) (kvstore) (service)]
-			{SqrWall Core};
+			{};
 	\end{pgfonlayer}
 \end{tikzpicture}
 
