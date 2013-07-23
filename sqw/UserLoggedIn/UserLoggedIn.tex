@@ -59,10 +59,11 @@
 					inner sep=2pt},
 			%every label/.style=red,
 			tinyfont/.style={font=\it\tiny},
-		      elab/.style={above,tinyfont},
-			elabb/.style={below,tinyfont},
-			elabs/.style={above,sloped,tinyfont},
-			elabbs/.style={below,sloped,tinyfont},
+			elab text/.style={tinyfont,align=center},
+		      elab/.style={above,elab text},
+			elabb/.style={below,tinyfont,elab text},
+			elabs/.style={above,sloped,elab text},
+			elabbs/.style={below,sloped,elab text},
 			end point/.style={circle,fill=red!30,draw=black!30,thick,
 						 inner sep=1pt,
 						 minimum size=5mm},
@@ -73,7 +74,7 @@
 						 minimum height=1cm+20pt,
 						 inner sep=2pt,
 						 shape border rotate=90},
-			returning/.style={dotted,bend angle=5,bend left},
+			returning/.style={dotted,bend angle=10,bend left},
 			this is/.style=dotted,
 			bend angle=40,
 			pre/.style={<-,shorten <=1pt,>=stealth',semithick},
@@ -87,6 +88,8 @@
 	\node [below right=of user1,xshift=-70pt, yshift=15pt] (desktop)
 		{ \includegraphics[width=0.6cm]{../img/desktop.jpg}}	
 		edge[pre, bend left] (user1);
+	%%phantom node for web to desktop return edge
+	\node [above left=of desktop,xshift=1cm+10pt, yshift=-1cm-10pt] (desktop_back) {};
 		
 %%  -------------- STICK USER 2 ------------------------------ %%
 	\node [right=of user1, xshift=2cm, yshift=-6pt] (user2)
@@ -103,6 +106,9 @@
 	\node [ component,below left=of desktop, xshift=1.3cm,yshift=15pt] (web)
 									 {Web Site}
 		edge[pre, bend left]  (desktop);
+	%%phantom node for positioning return edge to desktop
+	\node [left=of web, xshift=1cm+40pt, yshift=10pt] (web_back) {}
+		edge[post,bend left, bend angle=30,dotted] node[elab,xshift=-25pt] {return \\HTML data} (desktop_back);
 
 %% ------------------------------ GATEWAY----------------------- %%
 	\node [ component,below right=of web, 
@@ -115,10 +121,12 @@
 %% -------------------------------- CONNECTIONS ----------------- %%
 	\node[end point, above=of gateway, xshift=0.3cm,yshift=-1.55cm] 
 							(conn1)	{}
-		edge[pre] node[elab,xshift=5pt] {login} (web);
+		edge[pre] node[elab,xshift=15pt] {login} (web)
+		edge[post,returning] node[elab,xshift=-25pt] {return\\JSON data} (web);
 	\node[end point, right=of conn1, xshift=-.8cm,yshift=-2pt] 
 							(conn2)	{}
-		edge[pre] node[elab,xshift=-5pt] {login} (mobile);
+		edge[pre] node[elabb,xshift=5pt] {login} (mobile)
+		edge[post,returning] node[elabs,xshift=-2pt] {return\\JSON data} (mobile);
 
 	%% Connections Label
 	\node[left=of conn1,tinyfont, xshift=5pt,yshift=23pt] {persistent duplex connections}
@@ -134,16 +142,17 @@
 
 %% ---------------------------------- SERVICE ---------------------- %%
 	\node[component, below=of gateway, 
-			minimum width=4cm, xshift=5pt, yshift=-10pt,
+			minimum width=4cm, xshift=5pt, yshift=-20pt,
 			text depth=2cm] (service) {Service}
-		edge[pre] node[elab,xshift=22pt] {get data for user} (gateway);	
+		edge[pre] node[elab,xshift=25pt] {get data for user} (gateway)
+		edge[post,returning] node[elab,xshift=-22pt] {	return\\JSON data} (gateway);
 	\node[inlay, above=of service,
 		  yshift=-3.8cm,xshift=-1cm-5pt] (cache) {cache};
 
 	%% -- phantom node for return edge with session store
 	\node [right=of service,xshift=-1cm-8pt,yshift=2pt] (service_kvback) {};
 %% ----------------------------------- Session Store --------------------------- %%
-	\node[database, right=of service,xshift=1cm+15pt,yshift=10pt,align=center] {Session\\Store}
+	\node[database, right=of service,xshift=1cm+15pt,yshift=15pt,align=center] {Session\\Store}
 		edge[pre] node [elabs] {get/update session} (service)
 		edge[post,returning] node[elabbs] {return session} (service_kvback);
 
@@ -155,7 +164,7 @@
 %% ----------------------------------- DATASYS ---------------------- %%
 	\node[outsys, below right=of kvs1,
 			minimum height=2cm,
-			xshift=-1cm+20pt,yshift=-35pt] {Data System}
+			xshift=-1cm+20pt,yshift=-45pt] {Data System}
 		edge[pre,dotted] node[elabb] {fetch raw data} (service);
 
 %% ------------------------------------ AUTHSYS ---------------------- %%
@@ -166,7 +175,7 @@
 	\begin{pgfonlayer}{background}
 		\node [fill=red!10,
 				fit=(gateway) (gateway_kvback) (kvs1) (service)]
-			{};
+			{Sqw Core};
 	\end{pgfonlayer}
 \end{tikzpicture}
 
