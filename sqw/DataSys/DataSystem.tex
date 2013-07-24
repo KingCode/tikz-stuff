@@ -99,8 +99,9 @@
 
 \node [component, below=of ghreads,xshift=0pt, yshift=0cm] (ghwrites) {Write Handler};
 
-\node [innercomponent,
-	below=of ghwrites,xshift=27pt,yshift=15pt]	(gser) {Serializer};
+\node [innercomponent,below=of ghwrites,xshift=27pt,yshift=15pt]	
+									(gser) {Serializer}
+	edge [pre,bend right] node [elab,xshift=17pt,yshift=-5pt] {toBytes(data)} (ghwrites);
 
 %% ---------------- CLIENT FIGURES ------------------------ %%
 \node [left=of ghreads,xshift=10pt, yshift=1cm-10pt] (read) 
@@ -111,9 +112,12 @@
 
 %% --------------- SERVING LAYER ------------------------------ %%
 \node [component, right=of ghreads,xshift=20pt,yshift=-20pt] (servqh) {Query Router};
+
 \node [multipledb, right=of servqh,xshift=-8pt,yshift=0cm] (servdb1) {Query Store 1};
+
 \node [multipledb, below=of servdb1,xshift=0pt,yshift=20pt] (servdbn) {Query Store n}
 	edge[dashed] (servdb1);
+
 \node [above=of servqh,xshift=30pt,yshift=-15pt,ital] (servtitle) {Serving Layer};
 
 	%% ----- phantom anchor nodes for db background border end points
@@ -124,10 +128,14 @@
 %% --------------- BATCH LAYER ------------------------------ %%
 	%% ----------- WRITES ------------------------%%
 \node [innercomponent, below=of gser,xshift=10pt,yshift=10pt] (bdeser) {Deserializer};
-\node [component, below left=of bdeser,xshift=1cm+10pt,yshift=20pt] (bwriter) {Writer};
+\node [component, below left=of bdeser,xshift=1cm+10pt,yshift=20pt] (bwriter) {Writer}
+	edge [post, bend right] node [elab, xshift=20pt,yshift=-8pt] {getData(bytes)} (bdeser)
+	edge [pre] node [elab, xshift=-15pt,yshift=8pt] {write(bytes)} (ghwrites);
 
-\node [component, below=of bwriter,yshift=0pt] (bformatter) {Formatter};
-\node [database, right=of bformatter,yshift=-5pt] (bfile) {File System\\HDFS};
+\node [component, below=of bwriter,yshift=0pt] (bformatter) {Formatter}
+	edge [pre] node [elab,xshift=-20pt,yshift=-10pt] {format data\\and save} (bwriter);
+\node [database, right=of bformatter,yshift=-5pt] (bfile) {File System\\HDFS}
+	edge [pre] node [elab,xshift=-2pt] {write} (bformatter);
 
 	%% ------------ SNAPSHOT ----------------------%%
 \node [component, right=of bfile,xshift=-1cm+20pt,yshift=30pt] 
@@ -141,13 +149,16 @@
 	edge [post, bend angle=40, bend left]
 			 node [elab, xshift=-7pt,yshift=-1.5cm] {wipe out\\records before\\snapshot timestamp} (speeddb);
 
-\node [component, below right=of bassembler,xshift=-2cm,yshift=20pt] (mapreduce) {Map-Reduce}
+\node [component, below right=of bassembler,xshift=-2cm,yshift=20pt] 
+								(mapreduce) {Map-Reduce}
 	edge[pre,bend right] node [elab,xshift=7pt] {run job} (bcommand)
-	edge[pre, bend left, dotted] node [elab,xshift=-20pt, yshift=-3pt] {has defined} (bassembler)
+	edge[pre, bend left, dotted] node [elab,xshift=-20pt, yshift=-3pt] 
+								{has defined} (bassembler)
 	edge[post] node [elabbs] {read all records} (bfile)
 	edge[post, bend right] node [elab,xshift=17pt] {populate\\snapshot} (servdbend1);
 \node [right=of bwriter,xshift=20pt,yshift=0pt, ital] (btitle) {Batch Layer};
 
+\draw[dotted,thick] (5,0) -- (6,4.6);
 
 \begin{pgfonlayer}{background}
 	\node [subsys, 
