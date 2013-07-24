@@ -99,8 +99,8 @@
 
 \node [below=of ghreads,xshift=-5pt,yshift=20pt,ital] (gtitle) {Gateway};
 
-\node [component, below=of ghreads,xshift=-20pt, yshift=0cm] (ghwrites) {Write Handler}
-	edge [pre, bend angle=45, bend left] node [elabs,xshift=10pt] {process write data} (streamproc);
+\node [component, below=of ghreads,xshift=-20pt, yshift=0cm] (ghwrites) {Append Handler}
+	edge [pre, bend angle=45, bend left] node [elabs,xshift=10pt] {process new data} (streamproc);
 
 \node [innercomponent,below=of ghwrites,xshift=27pt,yshift=15pt]	
 									(gser) {Serializer}
@@ -143,9 +143,9 @@
 	%% ----------- WRITES ------------------------%%
 \node [innercomponent, below=of gser,xshift=10pt,yshift=10pt] (bdeser) {Deserializer};
 
-\node [component, below left=of bdeser,xshift=1cm+10pt,yshift=20pt] (bwriter) {Writer}
+\node [component, below left=of bdeser,xshift=1cm+10pt,yshift=20pt] (bwriter) {Appender}
 	edge [post, bend right] node [elab, xshift=20pt,yshift=-8pt] {getData(bytes)} (bdeser)
-	edge [pre] node [elab, xshift=-15pt,yshift=8pt] {write(bytes)} (ghwrites);
+	edge [pre] node [elab, xshift=-15pt,yshift=8pt] {send(bytes)} (ghwrites);
 
 \node [component, below=of bwriter,yshift=0pt] (bformatter) {Formatter}
 	edge [pre] node [elab,xshift=-20pt,yshift=-10pt] {format data\\and save} (bwriter);
