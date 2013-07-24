@@ -39,7 +39,7 @@
 \pagenumbering{gobble}
 \topmargin=-10pt
 \footskip=0pt
-\center\small{SQW Component Interaction: \large{Initial Display upon Login}}
+\center\small{Component Interaction: SqrWalla Core\\Initial Display upon Login}
 
 \begin{tikzpicture}[place/.style={
 					circle,
@@ -165,7 +165,7 @@
 	\node[outsys, below right=of kvs1,
 			minimum height=2cm,
 			xshift=-1cm+20pt,yshift=-45pt] {Data System}
-		edge[pre,dotted] node[elabb] {fetch raw data} (service);
+		edge[pre,dotted] node[elabb] {fetch data query} (service);
 
 %% ------------------------------------ AUTHSYS ---------------------- %%
 	\node[outsys, above right=of kvs1, xshift=-10pt,yshift=-10pt] {Auth}
