@@ -90,32 +90,46 @@
 \node [component, xshift=20pt, yshift=-5pt] (streamproc) at (2, 11) {Stream Processor};
 
 \node [above=of streamproc,xshift=20pt,yshift=-1cm,ital] (speedtitle) {Speed Layer};
-\node [database,right=of streamproc] (speeddb) {Recent Data\\R/W};
+\node [database,right=of streamproc,xshift=10pt] (speeddb) {Recent Data\\R/W}
+	edge [pre] node [elab] {read/write} (streamproc);
 
 %% --------------- GATEWAY ------------------------------ %%
-\node [component, below=of streamproc, xshift=0pt,yshift=-10pt] (ghreads) {Read Handler};
+\node [component, below=of streamproc, xshift=20pt,yshift=-10pt] (ghreads) {Read Handler}
+	edge [post, bend left] node [elabs] (aggend1) {sql command} (speeddb);
 
 \node [below=of ghreads,xshift=-5pt,yshift=20pt,ital] (gtitle) {Gateway};
 
-\node [component, below=of ghreads,xshift=0pt, yshift=0cm] (ghwrites) {Write Handler};
+\node [component, below=of ghreads,xshift=-20pt, yshift=0cm] (ghwrites) {Write Handler}
+	edge [pre, bend angle=45, bend left] node [elabs,xshift=10pt] {process write data} (streamproc);
 
 \node [innercomponent,below=of ghwrites,xshift=27pt,yshift=15pt]	
 									(gser) {Serializer}
 	edge [pre,bend right] node [elab,xshift=17pt,yshift=-5pt] {toBytes(data)} (ghwrites);
 
 %% ---------------- CLIENT FIGURES ------------------------ %%
-\node [left=of ghreads,xshift=10pt, yshift=1cm-10pt] (read) 
-		{ \includegraphics[width=0.4cm]{../img/stick.png}};
+\node [left=of streamproc,xshift=10pt, yshift=-10pt] (write) 
+		{ \includegraphics[width=0.4cm]{../img/stick.png}}
+	edge [post, dotted, xshift=-3pt] (streamproc);
+\node [below=of write,tinyfont,yshift=25pt] {Update request};
 
-\node [ left=of ghwrites,xshift=10pt, yshift=-20pt] (write) 
-		{ \includegraphics[width=0.4cm]{../img/stick.png}};
+\node [ left=of ghreads,xshift=-10pt, yshift=-20pt] (read) 
+		{ \includegraphics[width=0.4cm]{../img/stick.png}}
+	edge [post, dotted, xshift=-3pt] (ghreads);
+\node [below=of read,tinyfont,yshift=25pt] {Data request};
 
 %% --------------- SERVING LAYER ------------------------------ %%
-\node [component, right=of ghreads,xshift=20pt,yshift=-20pt] (servqh) {Query Router};
+\node [component, right=of ghreads,xshift=0pt,yshift=-20pt] (servqh) {Query Engine}
+	edge [pre, bend left] node [elabbs] (aggend2) {custom query} (ghreads);
 
-\node [multipledb, right=of servqh,xshift=-8pt,yshift=0cm] (servdb1) {Query Store 1};
+\node [below=of aggend1,xshift=15pt,yshift=12pt] {\itshape{merged}}
+	edge [dotted,thick] (aggend1)
+	edge [dotted,thick] (aggend2);
 
-\node [multipledb, below=of servdb1,xshift=0pt,yshift=20pt] (servdbn) {Query Store n}
+\node [multipledb, right=of servqh,xshift=-8pt,yshift=0cm] (servdb1) {Query $1$ Store};
+
+\node [inlay, below=of servqh, yshift=20pt,xshift=5pt] {indexer};
+
+\node [multipledb, below=of servdb1,xshift=0pt,yshift=20pt] (servdbn) {Query $n$ Store}
 	edge[dashed] (servdb1);
 
 \node [above=of servqh,xshift=30pt,yshift=-15pt,ital] (servtitle) {Serving Layer};
@@ -128,18 +142,21 @@
 %% --------------- BATCH LAYER ------------------------------ %%
 	%% ----------- WRITES ------------------------%%
 \node [innercomponent, below=of gser,xshift=10pt,yshift=10pt] (bdeser) {Deserializer};
+
 \node [component, below left=of bdeser,xshift=1cm+10pt,yshift=20pt] (bwriter) {Writer}
 	edge [post, bend right] node [elab, xshift=20pt,yshift=-8pt] {getData(bytes)} (bdeser)
 	edge [pre] node [elab, xshift=-15pt,yshift=8pt] {write(bytes)} (ghwrites);
 
 \node [component, below=of bwriter,yshift=0pt] (bformatter) {Formatter}
 	edge [pre] node [elab,xshift=-20pt,yshift=-10pt] {format data\\and save} (bwriter);
+
 \node [database, right=of bformatter,yshift=-5pt] (bfile) {File System\\HDFS}
 	edge [pre] node [elab,xshift=-2pt] {write} (bformatter);
 
 	%% ------------ SNAPSHOT ----------------------%%
 \node [component, right=of bfile,xshift=-1cm+20pt,yshift=30pt] 
 							(bassembler) {Datalog};
+
 \node [innercomponent, above=of bassembler, xshift=2pt,yshift=-4pt+4pt,align=center]
 							(bcommand) {Data Snapshot\\Command}
 	edge [post] node [elab, xshift=-15pt] {get job} (bassembler)
@@ -147,7 +164,8 @@
 	edge [post,bend left] node [elab, xshift=-12pt,
 					 yshift=-15pt] {switch} (servdbend2)
 	edge [post, bend angle=40, bend left]
-			 node [elab, xshift=-7pt,yshift=-1.5cm] {wipe out\\records before\\snapshot timestamp} (speeddb);
+			 node [elab, xshift=-7pt,yshift=-1.5cm] 
+				{wipe out\\records before\\snapshot timestamp} (speeddb);
 
 \node [component, below right=of bassembler,xshift=-2cm,yshift=20pt] 
 								(mapreduce) {Map-Reduce}
@@ -156,9 +174,15 @@
 								{has defined} (bassembler)
 	edge[post] node [elabbs] {read all records} (bfile)
 	edge[post, bend right] node [elab,xshift=17pt] {populate\\snapshot} (servdbend1);
+
 \node [right=of bwriter,xshift=20pt,yshift=0pt, ital] (btitle) {Batch Layer};
 
+	%%  ------------------------- demarcation b/w reads and writes in batch layer----%%
 \draw[dotted,thick] (5,0) -- (6,4.6);
+
+%% ------------------------------ COMMENTS -------------------------------- %%
+\node [right=of speeddb,ital,smallfont,align=left,yshift=15pt] {Transactionsl RDBMS}
+	edge  (speeddb);
 
 \begin{pgfonlayer}{background}
 	\node [subsys, 
@@ -181,8 +205,11 @@
 \begin{pgfonlayer}{background}
 	\node [dotted,thick,draw,inner sep=4pt,
 			fit=  (servdb1) (servdbn)]
-		{};
+		(servdbborder){};
 \end{pgfonlayer}
+
+\node [above=of servdb1,ital,smallfont,align=left] {Fast, Read-Only\\NoSQL databases}
+	edge [ yshift=2pt] (servdbborder);
 
 \begin{pgfonlayer}{background}
 	\node [subsys, yellow!30,
